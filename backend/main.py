@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from .database import client
+from .config import settings
 from pymongo.errors import ConnectionFailure
 import os
 from .routers import auth, onboarding, moments, dashboard, external
@@ -13,15 +14,7 @@ app.include_router(moments.router, prefix="/api/v1")
 app.include_router(dashboard.router, prefix="/api/v1")
 app.include_router(external.router, prefix="/api/v1")
 
-origins = [
-    "http://localhost:5173",
-    "http://localhost:5137",
-]
-
-# Add production frontend URL if set (support comma separated)
-if os.getenv("FRONTEND_URL"):
-    for url in os.getenv("FRONTEND_URL").split(","):
-        origins.append(url.strip().rstrip("/"))
+origins = [origin.strip() for origin in settings.CORS_ORIGINS.split(",")]
 
 app.add_middleware(
     CORSMiddleware,
