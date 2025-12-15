@@ -18,13 +18,15 @@ origins = [
     "http://localhost:5137",
 ]
 
-# Add production frontend URL if set
+# Add production frontend URL if set (support comma separated)
 if os.getenv("FRONTEND_URL"):
-    origins.append(os.getenv("FRONTEND_URL"))
+    for url in os.getenv("FRONTEND_URL").split(","):
+        origins.append(url.strip().rstrip("/"))
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"https://.*\.vercel\.app", # Allow all Vercel deployments
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
