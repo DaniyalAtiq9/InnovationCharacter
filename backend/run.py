@@ -9,7 +9,7 @@ Usage:
     python -m uvicorn backend.main:app --reload
 """
 import sys
-import subprocess
+import os
 from pathlib import Path
 
 # Add the parent directory to the Python path so backend package imports work
@@ -33,7 +33,14 @@ except ImportError:
 
 # Now run uvicorn
 if __name__ == "__main__":
-    # Use uvicorn.run which is more reliable than subprocess
-    # Use 127.0.0.1 (localhost) instead of 0.0.0.0 for browser access
-    uvicorn.run("backend.main:app", host="127.0.0.1", port=8000, reload=True)
+    # Detect if we're running on Render (has PORT environment variable)
+    port = int(os.environ.get("PORT", 8000))
+    is_render = "PORT" in os.environ
+    
+    if is_render:
+        # On Render, bind to 0.0.0.0 and use PORT, no reload in production
+        uvicorn.run("backend.main:app", host="0.0.0.0", port=port, reload=False)
+    else:
+        # Local development: use 127.0.0.1 for browser access, with reload
+        uvicorn.run("backend.main:app", host="127.0.0.1", port=8000, reload=True)
 
